@@ -14,8 +14,14 @@ const connectionString = `mongodb+srv://fgomezp:${password}@cluster0.hrihp.mongo
 
 const LIST_DIRS = [
   './files/neusa_compuertas',
-  './files/logger1',
-  './files/logger2'
+  './files/neusa_valv',
+  './files/hato_alumbrado'
+]
+
+const LIST_DIRS_BACKUP = [
+  './files/backupNeusaCompuertas',
+  './files/backupNeusaValvula',
+  './files/backupHatoAlumbrado',
 ]
 
 
@@ -35,18 +41,20 @@ const neusaCompuertasSchema = new Schema({
       data: [{
         FECHA: Date,
         ENT1_FALLA_1: Number,
+        ENT2_MAN_1: Number,
         ENT3_AUT_1: Number,
         ENT4_CERR_1: Number,
         ENT5_ABIER_1: Number,
-        ENT5_ABIER_1: Number,
         ENT6_FALLA_2: Number,
+        ENT7_MAN_2: Number,
         ENT8_AUT_2: Number,
         ENT2_1_CERR_2HMI: Number,
         ENT2_2_ABIER_2HMI: Number,
-        ENT2_3_FALL_3: Number,
-        ENT2_5_AUTO_3: Number,
-        ENT2_6_CERR_3: Number,
-        ENT2_7_ABIER_3: Number
+        ENT2_3_FALL_3_HMI: Number,
+        ENT2_4_MAN_3_HMI: Number,
+        ENT2_5_AUTO_3_HMI: Number,
+        ENT2_6_CERR_3_HMI: Number,
+        ENT2_7_ABIER_3_HMI: Number
       }]
 })
 const CompuertasNeusa = model('CompuertasNeusa', neusaCompuertasSchema)
@@ -67,26 +75,59 @@ const readDir = (dirName) => {
 const headersNeusa = [
   'FECHA',
   'ENT1_FALLA_1',
+  'ENT2_MAN_1',
   'ENT3_AUT_1',
   'ENT4_CERR_1',
   'ENT5_ABIER_1',
   'ENT6_FALLA_2',
+  'ENT7_MAN_2',
   'ENT8_AUT_2',
   'ENT2_1_CERR_2HMI',
   'ENT2_2_ABIER_2HMI',
-  'ENT2_3_FALL_3',
-  'ENT2_5_AUTO_3',
-  'ENT2_6_CERR_3',
-  'ENT2_7_ABIER_3'
+  'ENT2_3_FALL_3_HMI',
+  'ENT2_4_MAN_3_HMI',
+  'ENT2_5_AUTO_3_HMI',
+  'ENT2_6_CERR_3_HMI',
+  'ENT2_7_ABIER_3_HMI'
+]
+
+const headersValvNeusa = [
+  'FECHA',
+  'LIT_NEUSA',
+  'PIT_NEUSA',
+  'FIT_NEUSA',
+  'ZT_NEUSA',
+  'AUT_REG_HMI',
+  'MAN_REG_HMI',
+  'OPENED_REG',
+  'CLOSED_REG',
+  'LIT_NEUSA',
+  'REM_REG',
+  'LOC_REG',
+  'MAN_CORTE_HMI',
+  'LOC_CORTE',
+  'REM_CORTE',
+  'FALL_REG',
+  'DISP_REG',
+  'PIT_FALLA',
+  'LIT_FALLA',
+  'FIT_FALLA',
+  'ZT_FALLA',
+  'COMM_REG_FALLA',
+  'ESD_SITIO'
 ]
 
 const headersIluminaria = [
-  'fecha',
-  'variable_1',
-  'variable_2',
-  'variable_3',
-  'variable_4'
+  'FECHA',
+  'ENTRADA_1_AUTO',
+  'ENTRADA_2_AUTO',
+  'ENTRADA_3_AUTO',
+  'ENCENDIDO_1',
+  'ENCENDIDO_2',
+  'ENCENDIDO_3'
 ]
+
+
 
 // eslint-disable-next-line array-callback-return
 LIST_DIRS.map(dirName => {
@@ -96,40 +137,45 @@ LIST_DIRS.map(dirName => {
       filenames.map((file) => {
         const nameLogger = dirName.split('/')[2]
         var headers = []
+        var fieldDate = ''
+        var field1 = ''
         const data = fs.readFileSync(dirName + '/' + file, 'utf8')
         var newData = data.replace(/\t/g, 'T')
-        newData = newData.replace('VALVULAS_COMPUERTAS', '').trim()
         newData = newData.replace('[%Y-%m-%d %H:%M:%S];', '').trim()
         newData = newData.replace('[];', '').trim()
         if (nameLogger === 'neusa_compuertas') {
-            headers = headersNeusa
-        } else if (nameLogger === 'logger1') {
-            headers = headersIluminaria
+          newData = newData.replace('COMPUERTAS', '').trim()
+          headers = headersNeusa
+          fieldDate = 'ENT1_FALLA_1'
+        } else if (nameLogger === 'neusa_valv') {
+          newData = newData.replace('VALVULA_NEUSA', '').trim()
+          headers = headersValvNeusa
         } else {
-            headers = headersIluminaria
+          headers = headersIluminaria
         }
         csv({
           delimiter: ';',
           noheader: true,
           headers: headers
         })
-          .fromString(newData)
-          .fromFile(file)
-          .then((csvRow) => {
-            jsonFile = {}
-            jsonFile = {
-              __file: file,
-              data: csvRow.filter(element => element.ENT1_FALLA_1 !== 'ENT3_AUT_1' &&  element.ENT1_FALLA_1 !== '[]')
-            }
-            if (nameLogger === 'neusa_compuertas') {
-              CompuertasNeusa.insertMany(jsonFile)
-                .then(result => {
-                  mongoose.connection.close()
-                })
-                .catch(err => {
-                })
-            }
-          })
+        .fromString(newData)
+            //.fromFile(file)
+        .then((csvRow) => {
+          jsonFile = {
+            __file: file,
+            data: csvRow.filter(element => element.FECHA !== fieldDate && element.ENT1_FALLA_1 !== '[]')
+          }
+          if (nameLogger === 'neusa_compuertas') {
+            console.log(jsonFile)
+            CompuertasNeusa.insertMany(jsonFile)
+            .then(result => {
+              console.log(file, 'Actualizado')
+              fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[0] + '/' + file, (err) => {
+                if (err) throw err;
+              })
+            })
+          }
+        })
       })
     })
     .catch((err) => {
@@ -138,6 +184,10 @@ LIST_DIRS.map(dirName => {
 })
 
 
+setTimeout(() => {
+  mongoose.connection.close()
+  console.log('BD connection is closed')
+}, 10000);
 
 
 
