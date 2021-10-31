@@ -59,6 +59,51 @@ const neusaCompuertasSchema = new Schema({
 })
 const CompuertasNeusa = model('CompuertasNeusa', neusaCompuertasSchema)
 
+const valvNeusaSchema = new Schema ({
+  __file: String,
+  data: [{
+        FECHA: Date,
+        LIT_NEUSA: Number,
+        PIT_NEUSA: Number,
+        FIT_NEUSA: Number,
+        ZT_NEUSA: Number,
+        AUT_REG_HMI: Number,
+        MAN_REG_HMI: Number,
+        OPENED_REG: Number,
+        CLOSED_REG: Number,
+        LIT_NEUSA: Number,
+        REM_REG: Number,
+        LOC_REG: Number,
+        MAN_CORTE_HMI: Number,
+        LOC_CORTE: Number,
+        REM_CORTE: Number,
+        FALL_REG: Number,
+        DISP_REG: Number,
+        PIT_FALLA: Number,
+        LIT_FALLA: Number,
+        FIT_FALLA: Number,
+        ZT_FALLA: Number,
+        COMM_REG_FALLA: Number,
+        ESD_SITIO: Number
+      }]
+})
+
+const ValvulaNeusa = model('ValvulaNeusa', valvNeusaSchema)
+
+const alumbradoHatoSchema = new Schema ({
+  __file: String,
+  data: [{
+        FECHA: Date,
+        ENTRADA_1_AUTO: Number,
+        ENTRADA_2_AUTO: Number,
+        ENTRADA_3_AUTO: Number,
+        ENCENDIDO_1: Number,
+        ENCENDIDO_2: Number,
+        ENCENDIDO_3: Number,
+      }]
+})
+
+const AlumbradoHato = model('AlumbradoHato', alumbradoHatoSchema)
 
 const readDir = (dirName) => {
   return new Promise((resolve, reject) => {
@@ -141,8 +186,7 @@ LIST_DIRS.map(dirName => {
         var field1 = ''
         const data = fs.readFileSync(dirName + '/' + file, 'utf8')
         var newData = data.replace(/\t/g, 'T')
-        newData = newData.replace('[%Y-%m-%d %H:%M:%S];', '').trim()
-        newData = newData.replace('[];', '').trim()
+        newData = newData.replace('[%Y-%m-%d %H:%M:%S]', '').trim()
         if (nameLogger === 'neusa_compuertas') {
           newData = newData.replace('COMPUERTAS', '').trim()
           headers = headersNeusa
@@ -150,8 +194,11 @@ LIST_DIRS.map(dirName => {
         } else if (nameLogger === 'neusa_valv') {
           newData = newData.replace('VALVULA_NEUSA', '').trim()
           headers = headersValvNeusa
+          fieldDate = 'LIT_NEUSA'
         } else {
+          newData = newData.replace('ALUMBRADO', '').trim()
           headers = headersIluminaria
+          fieldDate = 'ENTRADA_1_AUTO'
         }
         csv({
           delimiter: ';',
@@ -163,7 +210,7 @@ LIST_DIRS.map(dirName => {
         .then((csvRow) => {
           jsonFile = {
             __file: file,
-            data: csvRow.filter(element => element.FECHA !== fieldDate && element.ENT1_FALLA_1 !== '[]')
+            data: csvRow.filter(element => element.FECHA !== fieldDate && element.FECHA !== '[%Y-%m-%dT%H:%M:%S]')
           }
           if (nameLogger === 'neusa_compuertas') {
             console.log(jsonFile)
@@ -171,6 +218,24 @@ LIST_DIRS.map(dirName => {
             .then(result => {
               console.log(file, 'Actualizado')
               fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[0] + '/' + file, (err) => {
+                if (err) throw err;
+              })
+            })
+          } else if (nameLogger === 'neusa_valv') {
+            console.log(jsonFile)
+            ValvulaNeusa.insertMany(jsonFile)
+            .then(result => {
+              console.log(file, 'Actualizado')
+              fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
+                if (err) throw err;
+              })
+            })
+          } else {
+            console.log(jsonFile)
+            AlumbradoHato.insertMany(jsonFile)
+            .then(result => {
+              console.log(file, 'Actualizado')
+              fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
                 if (err) throw err;
               })
             })
