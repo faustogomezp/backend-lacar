@@ -25,17 +25,6 @@ const LIST_DIRS_BACKUP = [
 ]
 
 
-mongoose.connect(connectionString, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(()=> {
-    console.log('Database connected')
-})
-.catch(err => {
-    console.log(err)
-})
-
 const neusaCompuertasSchema = new Schema({
       __file: String,
       data: [{
@@ -175,86 +164,95 @@ const headersIluminaria = [
 
 
 // eslint-disable-next-line array-callback-return
-LIST_DIRS.map(dirName => {
-  readDir(dirName)
-    .then((filenames) => {
-      // eslint-disable-next-line array-callback-return
-      filenames.map((file) => {
-        const nameLogger = dirName.split('/')[2]
-        var headers = []
-        var fieldDate = ''
-        var field1 = ''
-        const data = fs.readFileSync(dirName + '/' + file, 'utf8')
-        var newData = data.replace(/\t/g, 'T')
-        newData = newData.replace('[%Y-%m-%d %H:%M:%S]', '').trim()
-        if (nameLogger === 'neusa_compuertas') {
-          newData = newData.replace('COMPUERTAS', '').trim()
-          headers = headersNeusa
-          fieldDate = 'ENT1_FALLA_1'
-        } else if (nameLogger === 'neusa_valv') {
-          newData = newData.replace('VALVULA_NEUSA', '').trim()
-          headers = headersValvNeusa
-          fieldDate = 'LIT_NEUSA'
-        } else {
-          newData = newData.replace('ALUMBRADO', '').trim()
-          headers = headersIluminaria
-          fieldDate = 'ENTRADA_1_AUTO'
-        }
-        csv({
-          delimiter: ';',
-          noheader: true,
-          headers: headers
-        })
-        .fromString(newData)
-            //.fromFile(file)
-        .then((csvRow) => {
-          jsonFile = {
-            __file: file,
-            data: csvRow.filter(element => element.FECHA !== fieldDate && element.FECHA !== '[%Y-%m-%dT%H:%M:%S]')
-          }
-          if (nameLogger === 'neusa_compuertas') {
-            console.log(jsonFile)
-            CompuertasNeusa.insertMany(jsonFile)
-            .then(result => {
-              console.log(file, 'Actualizado')
-              fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[0] + '/' + file, (err) => {
-                if (err) throw err;
+setInterval(() => {
+
+  mongoose.connect(connectionString, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(()=> {
+      console.log('Database connected')
+      LIST_DIRS.map(dirName => {
+        readDir(dirName)
+          .then((filenames) => {
+            // eslint-disable-next-line array-callback-return
+            filenames.map((file) => {
+              const nameLogger = dirName.split('/')[2]
+              var headers = []
+              var fieldDate = ''
+              const data = fs.readFileSync(dirName + '/' + file, 'utf8')
+              var newData = data.replace(/\t/g, 'T')
+              newData = newData.replace('[%Y-%m-%d %H:%M:%S]', '').trim()
+              if (nameLogger === 'neusa_compuertas') {
+                newData = newData.replace('COMPUERTAS', '').trim()
+                headers = headersNeusa
+                fieldDate = 'ENT1_FALLA_1'
+              } else if (nameLogger === 'neusa_valv') {
+                newData = newData.replace('VALVULA_NEUSA', '').trim()
+                headers = headersValvNeusa
+                fieldDate = 'LIT_NEUSA'
+              } else {
+                newData = newData.replace('ALUMBRADO', '').trim()
+                headers = headersIluminaria
+                fieldDate = 'ENTRADA_1_AUTO'
+              }
+              csv({
+                delimiter: ';',
+                noheader: true,
+                headers: headers
+              })
+              .fromString(newData)
+                  //.fromFile(file)
+              .then((csvRow) => {
+                jsonFile = {
+                  __file: file,
+                  data: csvRow.filter(element => element.FECHA !== fieldDate && element.FECHA !== '[%Y-%m-%dT%H:%M:%S]')
+                }
+                if (nameLogger === 'neusa_compuertas') {
+                  CompuertasNeusa.insertMany(jsonFile)
+                  .then(result => {
+                    console.log(file, 'Actualizado')
+                    fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[0] + '/' + file, (err) => {
+                      if (err) throw err;
+                    })
+                  })
+                } else if (nameLogger === 'neusa_valv') {
+                  console.log(jsonFile)
+                  ValvulaNeusa.insertMany(jsonFile)
+                  .then(result => {
+                    console.log(file, 'Actualizado')
+                    fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
+                      if (err) throw err;
+                    })
+                  })
+                } else {
+                  console.log(jsonFile)
+                  AlumbradoHato.insertMany(jsonFile)
+                  .then(result => {
+                    console.log(file, 'Actualizado')
+                    fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[2] + '/' + file, (err) => {
+                      if (err) throw err;
+                    })
+                  })
+                }
               })
             })
-          } else if (nameLogger === 'neusa_valv') {
-            console.log(jsonFile)
-            ValvulaNeusa.insertMany(jsonFile)
-            .then(result => {
-              console.log(file, 'Actualizado')
-              fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
-                if (err) throw err;
-              })
-            })
-          } else {
-            console.log(jsonFile)
-            AlumbradoHato.insertMany(jsonFile)
-            .then(result => {
-              console.log(file, 'Actualizado')
-              fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
-                if (err) throw err;
-              })
-            })
-          }
-        })
+          })
+          .catch((err) => {
+            console.log(err)
+          })
       })
-    })
-    .catch((err) => {
+    setTimeout(() => {
+      mongoose.connection.close()
+      console.log('BD connection is closed')
+    }, 10000);
+  })
+  .catch(err => {
       console.log(err)
-    })
-})
-
-
-setTimeout(() => {
-  mongoose.connection.close()
-  console.log('BD connection is closed')
-}, 10000);
-
-
+  })
+    
+  console.log('Cada 5 minutos')
+}, 300000)
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World</h1>')
