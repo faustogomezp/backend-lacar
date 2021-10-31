@@ -258,14 +258,30 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/variables/:logger', (request, response) => {
+  const logger = request.params.logger
   mongoose.connect(connectionString)
   .then(() => {
     //Organizarla del mayor al menor
-    CompuertasNeusa.find({})
-    .then(result => {
-      response.json(result)
-      mongoose.connection.close()
-    })
+    if (logger === 'compuertas') {
+      CompuertasNeusa.find({})
+      .then(result => {
+        response.json(result)
+        mongoose.connection.close()
+      })
+    } else if (logger === 'alumbrado') {
+      AlumbradoHato.find({})
+      .then(result => {
+        response.json(result)
+        mongoose.connection.close()
+      })
+    } else if (logger === 'valvula'){
+      ValvulaNeusa.find({})
+      .then(result => {
+        response.json(result)
+        mongoose.connection.close()
+      })
+    }
+    
   })
   .catch(err => {
     response.send('Not connected to db, Try soo')
@@ -277,14 +293,31 @@ app.get('/api/variables/online/:logger', (request, response) => {
   const logger = request.params.logger
   mongoose.connect(connectionString)
   .then(() => {
-    if (logger === 'logger0'){
-      LoggerZero.find({}, {'_id': 1}).sort({$natural:-1}).limit(1)
+    if (logger === 'compuertas') {
+      CompuertasNeusa.find({}).sort({$natural:-1}).limit(1)
       .then(result => {
         if (result){
-          const lastId = result[0]._id
-          console.log(typeof(lastId), lastId)
+          const lastId = result[0].data[result[0].data.length-1]
+          response.json(lastId)
         }
-        response.json(result)
+        mongoose.connection.close()
+      })
+    } else if (logger === 'alumbrado') {
+      AlumbradoHato.find({}).sort({$natural:-1}).limit(1)
+      .then(result => {
+        if (result){
+          const lastId = result[0].data[result[0].data.length-1]
+          response.json(lastId)
+        }
+        mongoose.connection.close()
+      })
+    } else if (logger === 'valvula') {
+      ValvulaNeusa.find({}).sort({$natural:-1}).limit(1)
+      .then(result => {
+        if (result){
+          const lastId = result[0].data[result[0].data.length-1]
+          response.json(lastId)
+        }
         mongoose.connection.close()
       })
     }
