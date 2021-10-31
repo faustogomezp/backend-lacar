@@ -13,15 +13,15 @@ const password = 'DBQMi6Tasla7u07k'
 const connectionString = `mongodb+srv://fgomezp:${password}@cluster0.hrihp.mongodb.net/lacar?retryWrites=true&w=majority`
 
 const LIST_DIRS = [
-  './files/neusa_compuertas',
-  './files/neusa_valv',
-  './files/hato_alumbrado'
+  '../../NEUSA/COMPUERTAS',
+  '../../NEUSA/REGULADORA_NEUSA',
+  '../../NEUSA/ELHATO2'
 ]
 
 const LIST_DIRS_BACKUP = [
-  './files/backupNeusaCompuertas',
-  './files/backupNeusaValvula',
-  './files/backupHatoAlumbrado',
+  '../../NEUSA/backupNeusaCompuertas',
+  '../../NEUSA/backupNeusaValvula',
+  '../../NEUSA/backupHatoAlumbrado',
 ]
 
 
@@ -177,21 +177,22 @@ setInterval(() => {
           .then((filenames) => {
             // eslint-disable-next-line array-callback-return
             filenames.map((file) => {
-              const nameLogger = dirName.split('/')[2]
+              const nameLogger = dirName.split('/')[3]
+              console.log(nameLogger)
               var headers = []
               var fieldDate = ''
               const data = fs.readFileSync(dirName + '/' + file, 'utf8')
               var newData = data.replace(/\t/g, 'T')
               newData = newData.replace('[%Y-%m-%d %H:%M:%S]', '').trim()
-              if (nameLogger === 'neusa_compuertas') {
+              if (nameLogger === 'COMPUERTAS') {
                 newData = newData.replace('COMPUERTAS', '').trim()
                 headers = headersNeusa
                 fieldDate = 'ENT1_FALLA_1'
-              } else if (nameLogger === 'neusa_valv') {
+              } else if (nameLogger === 'REGULADORA_NEUSA') {
                 newData = newData.replace('VALVULA_NEUSA', '').trim()
                 headers = headersValvNeusa
                 fieldDate = 'LIT_NEUSA'
-              } else {
+              } else if (nameLogger === 'ELHATO2') {
                 newData = newData.replace('ALUMBRADO', '').trim()
                 headers = headersIluminaria
                 fieldDate = 'ENTRADA_1_AUTO'
@@ -208,7 +209,7 @@ setInterval(() => {
                   __file: file,
                   data: csvRow.filter(element => element.FECHA !== fieldDate && element.FECHA !== '[%Y-%m-%dT%H:%M:%S]')
                 }
-                if (nameLogger === 'neusa_compuertas') {
+                if (nameLogger === 'COMPUERTAS') {
                   CompuertasNeusa.insertMany(jsonFile)
                   .then(result => {
                     console.log(file, 'Actualizado')
@@ -216,8 +217,7 @@ setInterval(() => {
                       if (err) throw err;
                     })
                   })
-                } else if (nameLogger === 'neusa_valv') {
-                  console.log(jsonFile)
+                } else if (nameLogger === 'REGULADORA_NEUSA') {
                   ValvulaNeusa.insertMany(jsonFile)
                   .then(result => {
                     console.log(file, 'Actualizado')
@@ -225,8 +225,7 @@ setInterval(() => {
                       if (err) throw err;
                     })
                   })
-                } else {
-                  console.log(jsonFile)
+                } else if (nameLogger === 'ELHATO2') {
                   AlumbradoHato.insertMany(jsonFile)
                   .then(result => {
                     console.log(file, 'Actualizado')
