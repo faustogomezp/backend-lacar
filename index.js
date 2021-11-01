@@ -106,6 +106,17 @@ const readDir = (dirName) => {
   })
 }
 
+mongoose.connect(connectionString, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(()=> {
+    console.log('Database connected')
+})
+.catch(err => {
+    console.log(err)
+})
+
 const headersNeusa = [
   'FECHA',
   'ENT1_FALLA_1',
@@ -161,95 +172,89 @@ const headersIluminaria = [
   'ENCENDIDO_3'
 ]
 
+const saveData = () => {
+  console.log('Save Data')
+  LIST_DIRS.map(dirName => {
+    readDir(dirName)
+      .then((filenames) => {
+        // eslint-disable-next-line array-callback-return
+        filenames.map((file) => {
+          const nameLogger = dirName.split('/')[3]
+          console.log(nameLogger)
+          var headers = []
+          var fieldDate = ''
+          const data = fs.readFileSync(dirName + '/' + file, 'utf8')
+          var newData = data.replace(/\t/g, 'T')
+          newData = newData.replace('[%Y-%m-%d %H:%M:%S]', '').trim()
+          if (nameLogger === 'COMPUERTAS') {
+            newData = newData.replace('COMPUERTAS', '').trim()
+            headers = headersNeusa
+            fieldDate = 'ENT1_FALLA_1'
+          } else if (nameLogger === 'REGULADORA_NEUSA') {
+            newData = newData.replace('VALVULA_NEUSA', '').trim()
+            headers = headersValvNeusa
+            fieldDate = 'LIT_NEUSA'
+          } else if (nameLogger === 'ELHATO2') {
+            newData = newData.replace('ALUMBRADO', '').trim()
+            headers = headersIluminaria
+            fieldDate = 'ENTRADA_1_AUTO'
+          }
+          csv({
+            delimiter: ';',
+            noheader: true,
+            headers: headers
+          })
+          .fromString(newData)
+              //.fromFile(file)
+          .then((csvRow) => {
+            jsonFile = {
+              __file: file,
+              data: csvRow.filter(element => element.FECHA !== fieldDate && element.FECHA !== '[%Y-%m-%dT%H:%M:%S]')
+            }
+            if (nameLogger === 'COMPUERTAS') {
+              CompuertasNeusa.insertMany(jsonFile)
+              .then(result => {
+                console.log(file, 'Actualizado')
+                fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[0] + '/' + file, (err) => {
+                  if (err) throw err;
+                })
+              })
+            } else if (nameLogger === 'REGULADORA_NEUSA') {
+              ValvulaNeusa.insertMany(jsonFile)
+              .then(result => {
+                console.log(file, 'Actualizado')
+                fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
+                  if (err) throw err;
+                })
+              })
+            } else if (nameLogger === 'ELHATO2') {
+              AlumbradoHato.insertMany(jsonFile)
+              .then(result => {
+                console.log(file, 'Actualizado')
+                fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[2] + '/' + file, (err) => {
+                  if (err) throw err;
+                })
+              })
+            }
+          })
+        })
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  })
+}
 
+saveData()
 
 // eslint-disable-next-line array-callback-return
 setInterval(() => {
-
-  mongoose.connect(connectionString, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(()=> {
-      console.log('Database connected')
-      LIST_DIRS.map(dirName => {
-        readDir(dirName)
-          .then((filenames) => {
-            // eslint-disable-next-line array-callback-return
-            filenames.map((file) => {
-              const nameLogger = dirName.split('/')[3]
-              console.log(nameLogger)
-              var headers = []
-              var fieldDate = ''
-              const data = fs.readFileSync(dirName + '/' + file, 'utf8')
-              var newData = data.replace(/\t/g, 'T')
-              newData = newData.replace('[%Y-%m-%d %H:%M:%S]', '').trim()
-              if (nameLogger === 'COMPUERTAS') {
-                newData = newData.replace('COMPUERTAS', '').trim()
-                headers = headersNeusa
-                fieldDate = 'ENT1_FALLA_1'
-              } else if (nameLogger === 'REGULADORA_NEUSA') {
-                newData = newData.replace('VALVULA_NEUSA', '').trim()
-                headers = headersValvNeusa
-                fieldDate = 'LIT_NEUSA'
-              } else if (nameLogger === 'ELHATO2') {
-                newData = newData.replace('ALUMBRADO', '').trim()
-                headers = headersIluminaria
-                fieldDate = 'ENTRADA_1_AUTO'
-              }
-              csv({
-                delimiter: ';',
-                noheader: true,
-                headers: headers
-              })
-              .fromString(newData)
-                  //.fromFile(file)
-              .then((csvRow) => {
-                jsonFile = {
-                  __file: file,
-                  data: csvRow.filter(element => element.FECHA !== fieldDate && element.FECHA !== '[%Y-%m-%dT%H:%M:%S]')
-                }
-                if (nameLogger === 'COMPUERTAS') {
-                  CompuertasNeusa.insertMany(jsonFile)
-                  .then(result => {
-                    console.log(file, 'Actualizado')
-                    fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[0] + '/' + file, (err) => {
-                      if (err) throw err;
-                    })
-                  })
-                } else if (nameLogger === 'REGULADORA_NEUSA') {
-                  ValvulaNeusa.insertMany(jsonFile)
-                  .then(result => {
-                    console.log(file, 'Actualizado')
-                    fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
-                      if (err) throw err;
-                    })
-                  })
-                } else if (nameLogger === 'ELHATO2') {
-                  AlumbradoHato.insertMany(jsonFile)
-                  .then(result => {
-                    console.log(file, 'Actualizado')
-                    fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[2] + '/' + file, (err) => {
-                      if (err) throw err;
-                    })
-                  })
-                }
-              })
-            })
-          })
-          .catch((err) => {
-            console.log(err)
-          })
-      })
-    setTimeout(() => {
+    saveData()
+/*     setTimeout(() => {
       mongoose.connection.close()
       console.log('BD connection is closed')
-    }, 10000);
-  })
-  .catch(err => {
-      console.log(err)
-  })
-    
+    }, 10000); */
+   
   console.log('Cada 5 minutos')
 }, 300000)
 
@@ -259,40 +264,27 @@ app.get('/', (request, response) => {
 
 app.get('/api/variables/:logger', (request, response) => {
   const logger = request.params.logger
-  mongoose.connect(connectionString)
-  .then(() => {
     //Organizarla del mayor al menor
     if (logger === 'compuertas') {
       CompuertasNeusa.find({})
       .then(result => {
         response.json(result)
-        mongoose.connection.close()
       })
     } else if (logger === 'alumbrado') {
       AlumbradoHato.find({})
       .then(result => {
         response.json(result)
-        mongoose.connection.close()
       })
     } else if (logger === 'valvula'){
       ValvulaNeusa.find({})
       .then(result => {
         response.json(result)
-        mongoose.connection.close()
       })
     }
-    
-  })
-  .catch(err => {
-    response.send('Not connected to db, Try soo')
-  })
-
 })
 
 app.get('/api/variables/online/:logger', (request, response) => {
   const logger = request.params.logger
-  mongoose.connect(connectionString)
-  .then(() => {
     if (logger === 'compuertas') {
       CompuertasNeusa.find({}).sort({$natural:-1}).limit(1)
       .then(result => {
@@ -300,7 +292,6 @@ app.get('/api/variables/online/:logger', (request, response) => {
           const lastId = result[0].data[result[0].data.length-1]
           response.json(lastId)
         }
-        mongoose.connection.close()
       })
     } else if (logger === 'alumbrado') {
       AlumbradoHato.find({}).sort({$natural:-1}).limit(1)
@@ -309,7 +300,6 @@ app.get('/api/variables/online/:logger', (request, response) => {
           const lastId = result[0].data[result[0].data.length-1]
           response.json(lastId)
         }
-        mongoose.connection.close()
       })
     } else if (logger === 'valvula') {
       ValvulaNeusa.find({}).sort({$natural:-1}).limit(1)
@@ -318,13 +308,8 @@ app.get('/api/variables/online/:logger', (request, response) => {
           const lastId = result[0].data[result[0].data.length-1]
           response.json(lastId)
         }
-        mongoose.connection.close()
       })
     }
-  })
-  .catch(err => {
-    response.send('Not connected to db, Try again')
-  })
 })
 
 const PORT = process.env.PORT || 3001
