@@ -168,7 +168,6 @@ const saveData = () => {
         // eslint-disable-next-line array-callback-return
         filenames.map((file) => {
           const nameLogger = dirName.split('/')[3]
-          console.log(nameLogger)
           var headers = []
           var fieldDate = ''
           const data = fs.readFileSync(dirName + '/' + file, 'utf8')
@@ -181,7 +180,7 @@ const saveData = () => {
           } else if (nameLogger === 'REGULADORA') {
             newData = newData.replace('REGULADORA', '').trim()
             headers = headersValvNeusa
-            fieldDate = 'LIT_NEUSA'
+            fieldDate = 'ZT_NEUSA'
           } else if (nameLogger === 'ELHATO2') {
             newData = newData.replace('ALUMBRADO', '').trim()
             headers = headersIluminaria
@@ -208,6 +207,7 @@ const saveData = () => {
                 })
               })
             } else if (nameLogger === 'REGULADORA') {
+              console.log(jsonFile)
               ValvulaNeusa.insertMany(jsonFile)
               .then(result => {
                 console.log(file, 'Actualizado')
