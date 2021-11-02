@@ -105,16 +105,6 @@ const readDir = (dirName) => {
   })
 }
 
-mongoose.connect(connectionString, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(()=> {
-    console.log('Database connected')
-})
-.catch(err => {
-    console.log(err)
-})
 
 const headersNeusa = [
   'FECHA',
@@ -243,7 +233,19 @@ const saveData = () => {
   })
 }
 
-saveData()
+mongoose.connect(connectionString, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(()=> {
+    console.log('Database connected')
+    saveData()
+})
+.catch(err => {
+    console.log(err)
+})
+
+
 
 // eslint-disable-next-line array-callback-return
 setInterval(() => {
