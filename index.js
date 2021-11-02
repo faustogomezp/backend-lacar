@@ -14,7 +14,7 @@ const connectionString = `mongodb+srv://fgomezp:${password}@cluster0.hrihp.mongo
 
 const LIST_DIRS = [
   '../../NEUSA/COMPUERTAS',
-  '../../NEUSA/REGULADORA_NEUSA',
+  '../../NEUSA/REGULADORA',
   '../../NEUSA/ELHATO2'
 ]
 
@@ -190,8 +190,8 @@ const saveData = () => {
             newData = newData.replace('COMPUERTAS', '').trim()
             headers = headersNeusa
             fieldDate = 'ENT1_FALLA_1'
-          } else if (nameLogger === 'REGULADORA_NEUSA') {
-            newData = newData.replace('VALVULA_NEUSA', '').trim()
+          } else if (nameLogger === 'REGULADORA') {
+            newData = newData.replace('REGULADORA', '').trim()
             headers = headersValvNeusa
             fieldDate = 'LIT_NEUSA'
           } else if (nameLogger === 'ELHATO2') {
@@ -219,7 +219,7 @@ const saveData = () => {
                   if (err) throw err;
                 })
               })
-            } else if (nameLogger === 'REGULADORA_NEUSA') {
+            } else if (nameLogger === 'REGULADORA') {
               ValvulaNeusa.insertMany(jsonFile)
               .then(result => {
                 console.log(file, 'Actualizado')
