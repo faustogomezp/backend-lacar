@@ -203,7 +203,7 @@ const saveData = () => {
               .then(result => {
                 console.log(file, 'Actualizado')
                 fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[0] + '/' + file, (err) => {
-                  if (err) throw err;
+                  if (err) console.log(err);
                 })
               })
             } else if (nameLogger === 'REGULADORA') {
@@ -212,7 +212,7 @@ const saveData = () => {
               .then(result => {
                 console.log(file, 'Actualizado')
                 fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[1] + '/' + file, (err) => {
-                  if (err) throw err;
+                  if (err) console.log(err);
                 })
               })
             } else if (nameLogger === 'ELHATO2') {
@@ -220,7 +220,7 @@ const saveData = () => {
               .then(result => {
                 console.log(file, 'Actualizado')
                 fs.rename(dirName + '/' + file, LIST_DIRS_BACKUP[2] + '/' + file, (err) => {
-                  if (err) throw err;
+                  if (err) console.log(err);
                 })
               })
             }
@@ -249,12 +249,7 @@ mongoose.connect(connectionString, {
 
 // eslint-disable-next-line array-callback-return
 setInterval(() => {
-    saveData()
-/*     setTimeout(() => {
-      mongoose.connection.close()
-      console.log('BD connection is closed')
-    }, 10000); */
-   
+  saveData()  
   console.log('Cada 5 minutos')
 }, 300000)
 
