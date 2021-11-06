@@ -56,10 +56,6 @@ const valvNeusaSchema = new Schema ({
         LIT_NEUSA: Number,
         PIT_NEUSA: Number,
         FIT_NEUSA: Number,
-        AUT_REG_HMI: Number,
-        MAN_REG_HMI: Number,
-        OPENED_REG: Number,
-        CLOSED_REG: Number,
         REM_REG: Number,
         LOC_REG: Number,
         MAN_CORTE_HMI: Number,
@@ -72,7 +68,11 @@ const valvNeusaSchema = new Schema ({
         FIT_FALLA: Number,
         ZT_FALLA: Number,
         COMM_REG_FALLA: Number,
-        ESD_SITIO: Number
+        ESD_SITIO: Number,
+        AUTREGH1: Number,
+        MANREGH1: Number,
+        OPENEDRHM1: Number,
+        CLOSEDRHM1: Number
       }]
 })
 
@@ -131,10 +131,6 @@ const headersValvNeusa = [
   'LIT_NEUSA',
   'PIT_NEUSA',
   'FIT_NEUSA',
-  'AUT_REG_HMI',
-  'MAN_REG_HMI',
-  'OPENED_REG',
-  'CLOSED_REG',
   'REM_REG',
   'LOC_REG',
   'MAN_CORTE_HMI',
@@ -147,7 +143,11 @@ const headersValvNeusa = [
   'FIT_FALLA',
   'ZT_FALLA',
   'COMM_REG_FALLA',
-  'ESD_SITIO'
+  'ESD_SITIO',
+  'AUTREGH1',
+  'MANREGH1',
+  'OPENEDRHM1',
+  'CLOSEDRHM1'
 ]
 
 const headersIluminaria = [
