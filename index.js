@@ -4,6 +4,7 @@ const fs = require('fs')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const { Schema, model } = mongoose
+const userRouter = require('./controllers/users')
 var jsonFile = {}
 
 const app = express()
@@ -92,6 +93,8 @@ const alumbradoHatoSchema = new Schema ({
 })
 
 const AlumbradoHato = model('AlumbradoHato', alumbradoHatoSchema)
+
+
 
 const readDir = (dirName) => {
   return new Promise((resolve, reject) => {
@@ -207,7 +210,6 @@ const saveData = () => {
                 })
               })
             } else if (nameLogger === 'REGULADORA') {
-              console.log(jsonFile)
               ValvulaNeusa.insertMany(jsonFile)
               .then(result => {
                 console.log(file, 'Actualizado')
@@ -306,6 +308,8 @@ app.get('/api/variables/online/:logger', (request, response) => {
       })
     }
 })
+
+app.use('api/users', userRouter)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
