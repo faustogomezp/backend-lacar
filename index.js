@@ -11,6 +11,7 @@ const userRouter = require('./controllers/users')
 var jsonFile = {}
 
 const app = express()
+app.use(express.json())
 app.use(cors())
 
 connectDb(db)
@@ -96,8 +97,6 @@ const alumbradoHatoSchema = new Schema ({
 })
 
 const AlumbradoHato = model('AlumbradoHato', alumbradoHatoSchema)
-
-
 
 const readDir = (dirName) => {
   return new Promise((resolve, reject) => {

@@ -8,7 +8,7 @@ const userSchema = new Schema ({
   
   userSchema.set('toJSON', {
     transform: (document, returnedObject) => {
-      returnedObjec.id = returnedObject._id
+      returnedObject.id = returnedObject._id
       delete returnedObject._id
       delete returnedObject.__v
       delete returnedObject.passwordHash
@@ -18,6 +18,6 @@ const userSchema = new Schema ({
   
   const User = model('User', userSchema)
 
-  model.exports = User
+  module.exports = User
 
   

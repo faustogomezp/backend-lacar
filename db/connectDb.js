@@ -1,8 +1,9 @@
 const mongoose = require('mongoose')
 
 function connectDb ({ host, port, dbName, username, password }) {
-    const uri = `mongodb://${host}:${port}/admin`
-    
+    const uri = `mongodb://${host}:${port}/${dbName}`
+    //const uri_remota = `mongodb+srv://fgomezp:${password}@cluster0.hrihp.mongodb.net/lacar?retryWrites=true&w=majority`
+
     const options = {
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -13,7 +14,6 @@ function connectDb ({ host, port, dbName, username, password }) {
     mongoose.connect(uri, options)
       .then(()=> {
         console.log("Db connected")
-        mongoose.connection.useDb(dbName)
       })
       .catch(err => {
           console.log(err)
