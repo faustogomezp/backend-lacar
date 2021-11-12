@@ -15,7 +15,7 @@ const connectionString = `mongodb+srv://fgomezp:${password}@cluster0.hrihp.mongo
 const LIST_DIRS = [
   '../../NEUSA/COMPUERTAS',
   '../../NEUSA/REGULADORA',
-  '../../NEUSA/ELHATO2'
+  '../../NEUSA/ELHATOAL'
 ]
 
 const LIST_DIRS_BACKUP = [
@@ -181,7 +181,7 @@ const saveData = () => {
             newData = newData.replace('REGULADORA', '').trim()
             headers = headersValvNeusa
             fieldDate = 'ZT_NEUSA'
-          } else if (nameLogger === 'ELHATO2') {
+          } else if (nameLogger === 'ELHATOAL') {
             newData = newData.replace('ALUMBRADO', '').trim()
             headers = headersIluminaria
             fieldDate = 'ENTRADA_1_AUTO'
@@ -215,7 +215,7 @@ const saveData = () => {
                   if (err) console.log(err);
                 })
               })
-            } else if (nameLogger === 'ELHATO2') {
+            } else if (nameLogger === 'ELHATOAL') {
               AlumbradoHato.insertMany(jsonFile)
               .then(result => {
                 console.log(file, 'Actualizado')
