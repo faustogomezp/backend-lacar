@@ -1,3 +1,6 @@
+require('dotenv').config()
+const { appConfig, db } = require('./config.js')
+const connectDb = require('./db/connectDb.js')
 const express = require('express')
 const csv = require('csvtojson')
 const fs = require('fs')
@@ -9,9 +12,9 @@ var jsonFile = {}
 
 const app = express()
 app.use(cors())
-/* const connectionString = 'mongodb://localhost:27017/lacar' */
-const password = 'DBQMi6Tasla7u07k'
-const connectionString = `mongodb+srv://fgomezp:${password}@cluster0.hrihp.mongodb.net/lacar?retryWrites=true&w=majority`
+
+connectDb(db)
+
 
 const LIST_DIRS = [
   '../../NEUSA/COMPUERTAS',
@@ -164,7 +167,6 @@ const headersIluminaria = [
 ]
 
 const saveData = () => {
-  console.log('Save Data')
   LIST_DIRS.map(dirName => {
     readDir(dirName)
       .then((filenames) => {
@@ -235,25 +237,11 @@ const saveData = () => {
   })
 }
 
-mongoose.connect(connectionString, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(()=> {
-    console.log('Database connected')
-    saveData()
-})
-.catch(err => {
-    console.log(err)
-})
-
-
-
 // eslint-disable-next-line array-callback-return
 setInterval(() => {
-  saveData()  
+  saveData()
   console.log('Cada 5 minutos')
-}, 300000)
+}, appConfig.milSeconds)
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World</h1>')
@@ -309,9 +297,9 @@ app.get('/api/variables/online/:logger', (request, response) => {
     }
 })
 
-app.use('api/users', userRouter)
+app.use('/api/users', userRouter)
 
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+
+app.listen(appConfig.port, () => {
+  console.log(`Server running on port ${appConfig.port}`)
 })
