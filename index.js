@@ -1,8 +1,11 @@
+require('dotenv').config()
+const { appConfig, db } = require('./config.js')
+const connectDb = require('./db/connectDb.js')
 const express = require('express')
-const csv = require('csvtojson')
-const fs = require('fs')
+
 const cors = require('cors')
 const mongoose = require('mongoose')
+<<<<<<< HEAD
 const { Schema, model } = mongoose
 var jsonFile = {}
 
@@ -105,61 +108,21 @@ const readDir = (dirName) => {
   })
 }
 
+=======
+const saveData = require('./controllers/saveData')
+const loginValidation = require('./middleware/loginValidation')
+>>>>>>> app-modular
 
-const headersNeusa = [
-  'FECHA',
-  'ENT1_FALLA_1',
-  'ENT2_MAN_1',
-  'ENT3_AUT_1',
-  'ENT4_CERR_1',
-  'ENT5_ABIER_1',
-  'ENT6_FALLA_2',
-  'ENT7_MAN_2',
-  'ENT8_AUT_2',
-  'ENT2_1_CERR_2HMI',
-  'ENT2_2_ABIER_2HMI',
-  'ENT2_3_FALL_3_HMI',
-  'ENT2_4_MAN_3_HMI',
-  'ENT2_5_AUTO_3_HMI',
-  'ENT2_6_CERR_3_HMI',
-  'ENT2_7_ABIER_3_HMI'
-]
+const userRouter = require('./controllers/users')
+const loginRouter = require('./controllers/login')
+const variablesRouter = require('./controllers/variables')
 
-const headersValvNeusa = [
-  'FECHA',
-  'ZT_NEUSA',
-  'LIT_NEUSA',
-  'PIT_NEUSA',
-  'FIT_NEUSA',
-  'REM_REG',
-  'LOC_REG',
-  'MAN_CORTE_HMI',
-  'LOC_CORTE',
-  'REM_CORTE',
-  'FALL_REG',
-  'DISP_REG',
-  'PIT_FALLA',
-  'LIT_FALLA',
-  'FIT_FALLA',
-  'ZT_FALLA',
-  'COMM_REG_FALLA',
-  'ESD_SITIO',
-  'AUTREGH1',
-  'MANREGH1',
-  'OPENEDRHM1',
-  'CLOSEDRHM1'
-]
 
-const headersIluminaria = [
-  'FECHA',
-  'ENTRADA_1_AUTO',
-  'ENTRADA_2_AUTO',
-  'ENTRADA_3_AUTO',
-  'ENCENDIDO_1',
-  'ENCENDIDO_2',
-  'ENCENDIDO_3'
-]
+const app = express()
+app.use(express.json())
+app.use(cors())
 
+<<<<<<< HEAD
 const saveData = () => {
   console.log('Save Data')
   LIST_DIRS.map(dirName => {
@@ -232,82 +195,29 @@ const saveData = () => {
       })
   })
 }
+=======
+>>>>>>> app-modular
 
-mongoose.connect(connectionString, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+connectDb(db)
+.then(() => {
+  saveData()
 })
-.then(()=> {
-    console.log('Database connected')
-    saveData()
-})
-.catch(err => {
-    console.log(err)
-})
-
-
 
 // eslint-disable-next-line array-callback-return
 setInterval(() => {
-  saveData()  
+  saveData()
   console.log('Cada 5 minutos')
-}, 300000)
+}, appConfig.milSecondsUpdate)
 
-app.get('/', (request, response) => {
+app.get('/', loginValidation, (request, response) => {
   response.send('<h1>Hello World</h1>')
 })
 
-app.get('/api/variables/:logger', (request, response) => {
-  const logger = request.params.logger
-    //Organizarla del mayor al menor
-    if (logger === 'compuertas') {
-      CompuertasNeusa.find({})
-      .then(result => {
-        response.json(result)
-      })
-    } else if (logger === 'alumbrado') {
-      AlumbradoHato.find({})
-      .then(result => {
-        response.json(result)
-      })
-    } else if (logger === 'valvula'){
-      ValvulaNeusa.find({})
-      .then(result => {
-        response.json(result)
-      })
-    }
-})
+app.use('/api/variables',loginValidation, variablesRouter)
+app.use('/api/users', userRouter)
+app.use('/api/login', loginRouter)
 
-app.get('/api/variables/online/:logger', (request, response) => {
-  const logger = request.params.logger
-    if (logger === 'compuertas') {
-      CompuertasNeusa.find({}).sort({$natural:-1}).limit(1)
-      .then(result => {
-        if (result){
-          const lastId = result[0].data[result[0].data.length-1]
-          response.json(lastId)
-        }
-      })
-    } else if (logger === 'alumbrado') {
-      AlumbradoHato.find({}).sort({$natural:-1}).limit(1)
-      .then(result => {
-        if (result){
-          const lastId = result[0].data[result[0].data.length-1]
-          response.json(lastId)
-        }
-      })
-    } else if (logger === 'valvula') {
-      ValvulaNeusa.find({}).sort({$natural:-1}).limit(1)
-      .then(result => {
-        if (result){
-          const lastId = result[0].data[result[0].data.length-1]
-          response.json(lastId)
-        }
-      })
-    }
-})
 
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+app.listen(appConfig.port, () => {
+  console.log(`Server running on port ${appConfig.port}`)
 })
