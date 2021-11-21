@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-function connectDb ({ host, port, dbName, username, password }) {
+async function connectDb ({ host, port, dbName, username, password }) {
     const uri = `mongodb://${host}:${port}/${dbName}`
     //const uri_remota = `mongodb+srv://fgomezp:${password}@cluster0.hrihp.mongodb.net/lacar?retryWrites=true&w=majority`
 
@@ -11,7 +11,7 @@ function connectDb ({ host, port, dbName, username, password }) {
         pass: password
     }
 
-    mongoose.connect(uri, options)
+    await mongoose.connect(uri, options)
       .then(()=> {
         console.log("Db connected")
       })
