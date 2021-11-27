@@ -36,25 +36,39 @@ variablesRouter.get('/online/:logger', (request, response) => {
       }
   })
 
-  variablesRouter.get('/:logger', (request, response) => {
+  variablesRouter.post('/:logger', (request, response) => {
     const logger = request.params.logger
+    const {body} = request
+    const {dateIni, dateFin} = body
+    if (dateFin !== null && dateIni !== null){
+  
       //Organizarla del mayor al menor
       if (logger === 'compuertas') {
-        CompuertasNeusa.find({})
+        CompuertasNeusa.find({data: {$elemMatch: {
+          FECHA: {$gte: new Date(dateIni)},
+          FECHA: {$lte: new Date(dateFin)}
+        } }})
         .then(result => {
           response.json(result)
         })
       } else if (logger === 'alumbrado') {
-        AlumbradoHato.find({})
+        AlumbradoHato.find({data: {$elemMatch: {
+          FECHA: {$gte: new Date(dateIni)},
+          FECHA: {$lte: new Date(dateFin)}
+        } }})
         .then(result => {
           response.json(result)
         })
       } else if (logger === 'valvula'){
-        ValvulaNeusa.find({})
+        ValvulaNeusa.find({data: {$elemMatch: {
+          FECHA: {$gte: new Date(dateIni)},
+          FECHA: {$lte: new Date(dateFin)}
+        } }})
         .then(result => {
           response.json(result)
         })
       }
+    }
   })
 
   module.exports = variablesRouter
