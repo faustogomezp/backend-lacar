@@ -3,6 +3,6 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOGU5OTRmZjcxMDI4NTI3YzhjOWY4MSIsInVzZXJuYW1lIjoiZmF1c3RvIiwiaWF0IjoxNjM2NzQ2NzU2fQ.dusS2oygQy4WjnJdr5hre-jb7uW6LRmpmLvoAi3dyKo
 
 {
-    "dateIni": "2021-11-01T00:00:00Z",
-    "dateFin": "2021-11-06T00:00:00Z"
+    "dateIni": "2021-11-08T06:00:00.Z",
+    "dateFin": "2021-11-08T07:00:00.Z"
 }

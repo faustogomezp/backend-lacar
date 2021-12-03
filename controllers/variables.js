@@ -41,29 +41,32 @@ variablesRouter.get('/online/:logger', (request, response) => {
     const {body} = request
     const {dateIni, dateFin} = body
     if (dateFin !== null && dateIni !== null){
-  
+      console.log(dateIni, dateFin)
       //Organizarla del mayor al menor
       if (logger === 'compuertas') {
         CompuertasNeusa.find({data: {$elemMatch: {
-          FECHA: {$gte: new Date(dateIni)},
-          FECHA: {$lte: new Date(dateFin)}
-        } }})
+          $and: [
+          {FECHA: {$gte: new Date(dateIni)}},
+          {FECHA: {$lte: new Date(dateFin)}}
+          ]} }})
         .then(result => {
           response.json(result)
         })
       } else if (logger === 'alumbrado') {
         AlumbradoHato.find({data: {$elemMatch: {
-          FECHA: {$gte: new Date(dateIni)},
-          FECHA: {$lte: new Date(dateFin)}
-        } }})
+          $and: [
+            {FECHA: {$gte: new Date(dateIni)}},
+            {FECHA: {$lte: new Date(dateFin)}}
+            ]} }})
         .then(result => {
           response.json(result)
         })
       } else if (logger === 'valvula'){
         ValvulaNeusa.find({data: {$elemMatch: {
-          FECHA: {$gte: new Date(dateIni)},
-          FECHA: {$lte: new Date(dateFin)}
-        } }})
+          $and: [
+            {FECHA: {$gte: new Date(dateIni)}},
+            {FECHA: {$lte: new Date(dateFin)}}
+            ]} }})
         .then(result => {
           response.json(result)
         })
