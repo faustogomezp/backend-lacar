@@ -16,7 +16,9 @@ const variablesRouter = require('./controllers/variables')
 
 const app = express()
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+  origin: '*'
+}))
 
 connectDb(db)
 .then(() => {
