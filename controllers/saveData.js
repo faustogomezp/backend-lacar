@@ -93,7 +93,7 @@ const readDir = (dirName) => {
               newData = newData.replace('REGULADORA', '').trim()
               headers = headersValvNeusa
               fieldDate = 'ZT_NEUSA'
-            } else if (nameLogger === 'ELHATOAL') {
+            } else if (nameLogger === 'ELHATOAL_') {
               newData = newData.replace('ALUMBRADO', '').trim()
               headers = headersIluminaria
               fieldDate = 'ENTRADA_1_AUTO'
@@ -126,7 +126,7 @@ const readDir = (dirName) => {
                     if (err) console.log(err);
                   })
                 })
-              } else if (nameLogger === 'ELHATOAL') {
+              } else if (nameLogger === 'ELHATOAL_') {
                 AlumbradoHato.insertMany(jsonFile)
                 .then(result => {
                   console.log(file, 'Actualizado')
